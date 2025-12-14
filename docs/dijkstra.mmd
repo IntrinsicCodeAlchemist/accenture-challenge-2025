@@ -1,0 +1,18 @@
+flowchart TD
+    Start([Inicio])
+    Init[Inicializar distancias\nOrigen = 0\nResto = infinito]
+    PQ[Cola de prioridad\nnodo con menor costo]
+    Visit[Marcar nodo como visitado]
+    Check{¿Nodo destino?}
+Explore[Explorar vecinos]
+Update[Actualizar distancia\nsi es menor]
+End([Fin])
+
+Start --> Init
+Init --> PQ
+PQ --> Visit
+Visit --> Check
+Check -- Sí --> End
+Check -- No --> Explore
+Explore --> Update
+Update --> PQ

@@ -1,0 +1,10 @@
+flowchart TD
+    Req[Request]
+    Ctrl[Controller]
+    Adv[GlobalExceptionHandler]
+    Resp[JSON Error Response]
+
+    Req --> Ctrl
+    Ctrl -->|BadRequestException| Adv
+    Ctrl -->|NotFoundException| Adv
+    Adv --> Resp

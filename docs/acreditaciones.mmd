@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Cliente
+    participant Controller as AcreditacionController
+    participant Service as AcreditacionService
+    participant Cache as PuntoDeVentaCache
+    participant DB as PostgreSQL
+
+    Cliente->>Controller: POST /api/acreditaciones
+    Controller->>Service: crearAcreditacion(request)
+
+    Service->>Cache: findById(puntoVentaId)
+    Cache-->>Service: PuntoDeVenta
+
+    Service->>DB: save(Acreditacion)
+    DB-->>Service: Acreditacion persistida
+
+    Service-->>Controller: AcreditacionResponse
+    Controller-->>Cliente: HTTP 200 OK

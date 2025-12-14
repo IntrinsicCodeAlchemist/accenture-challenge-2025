@@ -1,0 +1,17 @@
+flowchart TD
+    Client[Cliente / Postman]
+
+    Client --> PVController[PuntosDeVentaController]
+    Client --> CostosController[CostosController]
+    Client --> AcredController[AcreditacionController]
+
+    PVController --> PVService[PuntoDeVentaService]
+    PVService --> PVCache[PuntoDeVentaCache]
+
+    CostosController --> CostosService
+    CostosService --> CostosCache
+    CostosService --> PVCache
+
+    AcredController --> AcredService[AcreditacionService]
+    AcredService --> PVCache
+    AcredService --> AcredRepo[(PostgreSQL)]

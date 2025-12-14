@@ -1,0 +1,27 @@
+graph LR
+    A[CABA]
+    B[GBA_1]
+    C[GBA_2]
+    D[Santa Fe]
+    E[Córdoba]
+    F[Misiones]
+    G[Salta]
+    H[Chubut]
+    I[Santa Cruz]
+    J[Catamarca]
+
+    A -- 2 --> B
+    A -- 3 --> C
+    B -- 5 --> C
+    B -- 10 --> D
+    A -- 11 --> D
+    D -- 5 --> E
+    B -- 14 --> E
+    F -- 32 --> G
+    H -- 11 --> I
+    J -- 5 --> G
+    C -- 10 --> H
+    E -- 30 --> H
+    J -- 5 --> E
+    D -- 6 --> F
+
