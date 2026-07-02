@@ -10,10 +10,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class ExceptionHandlerController {
+    private static final Logger log = LoggerFactory.getLogger(ExceptionHandlerController.class);
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException e) {
         return ResponseEntity
@@ -37,6 +41,7 @@ public class ExceptionHandlerController {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error("Error interno no manejado", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, Constants.GENERIC_EXCEPTION));

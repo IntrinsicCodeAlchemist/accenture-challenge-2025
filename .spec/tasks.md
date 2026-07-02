@@ -87,7 +87,8 @@ Notas de contrato implementado:
 
 Notas de verificación:
 - `podman build -f docker/Dockerfile -t challenge-2025:test .` verificado correctamente.
-- `podman compose` requiere proveedor de Compose en el host (`podman-compose` o compatible); en esta máquina no está instalado, por eso no se ejecutó `compose up` completo.
+- `podman compose -f docker/docker-compose.yml up --build` verificado correctamente (PostgreSQL 16 Alpine + Spring Boot).
+- Endpoints de acreditaciones probados con escritura y lectura contra PostgreSQL exitosamente.
 
 **Criterio de aceptación:** la aplicación levanta con PostgreSQL externo usando Podman o Docker siguiendo README.
 
@@ -120,13 +121,13 @@ Notas:
 
 - [x] Ejecutar `git status` para asegurar solo cambios esperados.
 - [x] Ejecutar `./mvnw.cmd clean verify`.
-- [ ] Probar manualmente endpoints principales contra la app levantada (pendiente de que el usuario instale PostgreSQL).
+- [x] Probar manualmente endpoints principales contra la app levantada (verificado con PostgreSQL nativo y Podman Compose).
 - [x] Revisar que no haya secretos reales en configuración/documentación.
 - [x] Confirmar que el repositorio público no incluya artefactos innecesarios (`target/`, `.idea/`).
 
 Notas:
-- No se ejecutó prueba end-to-end contra PostgreSQL porque el motor no está instalado en el host local.
-- El usuario indicó que se encargará de la configuración de base de datos manualmente.
+- Prueba end-to-end ejecutada contra PostgreSQL tanto desde PostgreSQL nativo como desde Podman Compose.
+- Acreditaciones creadas, persistidas y recuperadas correctamente desde la base de datos.
 
 **Criterio de aceptación:** repositorio listo para publicación y defensa técnica.
 

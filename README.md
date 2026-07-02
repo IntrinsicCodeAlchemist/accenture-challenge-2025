@@ -120,10 +120,19 @@ SPRING_DATASOURCE_PASSWORD=postgres
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
 ```
 
+> Los defaults asumen la misma configuración que el `docker-compose.yml`. Si tu PostgreSQL nativo usa otra contraseña, créala con:
+> ```powershell
+> $env:SPRING_DATASOURCE_PASSWORD="tu_password"
+> ```
+> o pásala inline al ejecutar:
+> ```powershell
+> $env:SPRING_DATASOURCE_PASSWORD="admin23112017"; .\mvnw.cmd spring-boot:run
+> ```
+
 Para ejecutar localmente con una base PostgreSQL ya levantada:
 
 ```bash
-./mvnw.cmd spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
 ### Ejecución con Podman
@@ -140,11 +149,20 @@ Si el host usa `podman-compose`:
 podman-compose -f docker/docker-compose.yml up --build
 ```
 
+> ⚠️ Si el contenedor de PostgreSQL ya se ejecutó antes y persiste un volumen con datos, puede haber conflictos de contraseña. Para empezar desde cero:
+> ```bash
+> podman compose -f docker/docker-compose.yml down -v
+> podman compose -f docker/docker-compose.yml up --build
+> ```
+> La opción `-v` elimina el volumen `postgres_data`, forzando una inicialización limpia.
+
 ### Ejecución con Docker
 
 ```bash
 docker compose -f docker/docker-compose.yml up --build
 ```
+
+> ⚠️ Misma recomendación: usar `down -v` si hay volúmenes persistentes previos.
 
 La API queda publicada en:
 
@@ -169,31 +187,70 @@ SPRING_JPA_HIBERNATE_DDL_AUTO=update
 
 ### Probar rápidamente
 
-Listar puntos de venta:
+La API tiene autenticación HTTP Basic configurada (usuario: `admin`, contraseña: `admin123`). Todos los ejemplos la incluyen para compatibilidad.
+
+#### Puntos de venta (`/api/pdv`)
 
 ```bash
-curl http://localhost:8080/api/pdv
-```
+# Listar todos
+curl -u admin:admin123 http://localhost:8080/api/pdv
 
-Consultar camino mínimo:
+# Obtener uno
+curl -u admin:admin123 http://localhost:8080/api/pdv/1
 
-```bash
-curl http://localhost:8080/api/costos/camino/1/4
-```
-
-Crear acreditación:
-
-```bash
-curl -X POST http://localhost:8080/api/acreditaciones \
+# Crear
+curl -X POST http://localhost:8080/api/pdv \
+  -u admin:admin123 \
   -H "Content-Type: application/json" \
-  -d '{"importe":1500.75,"punto_venta_id":3}'
+  -d '{"id":11,"nombre":"Tucumán"}'
+
+# Actualizar
+curl -X PUT http://localhost:8080/api/pdv/11 \
+  -u admin:admin123 \
+  -H "Content-Type: application/json" \
+  -d '{"id":11,"nombre":"Tucumán Actualizado"}'
+
+# Eliminar
+curl -X DELETE http://localhost:8080/api/pdv/11 -u admin:admin123
 ```
 
-Listar acreditaciones:
+#### Costos (`/api/costos`)
 
 ```bash
-curl http://localhost:8080/api/acreditaciones
+# Agregar/actualizar costo directo
+curl -X POST http://localhost:8080/api/costos \
+  -u admin:admin123 \
+  -H "Content-Type: application/json" \
+  -d '{"origen":1,"destino":4,"costo":15}'
+
+# Ver vecinos de un punto
+curl -u admin:admin123 http://localhost:8080/api/costos/1
+
+# Camino mínimo entre dos puntos
+curl -u admin:admin123 http://localhost:8080/api/costos/camino/1/4
+
+# Eliminar costo directo
+curl -X DELETE http://localhost:8080/api/costos/1/4 -u admin:admin123
 ```
+
+#### Acreditaciones (`/api/acreditaciones`) — con PostgreSQL
+
+```bash
+# Crear una acreditación (el campo JSON es "punto_venta_id")
+curl -X POST http://localhost:8080/api/acreditaciones \
+  -u admin:admin123 \
+  -H "Content-Type: application/json" \
+  -d '{"importe":250.75,"punto_venta_id":1}'
+
+# Listar todas las acreditaciones
+curl -u admin:admin123 http://localhost:8080/api/acreditaciones
+```
+
+> **⚠️ Para Windows/PowerShell:** Si usas `curl.exe` desde PowerShell, el quoting del JSON puede fallar. La forma más fiable es escribir el JSON a un archivo temporal:
+> ```powershell
+> Set-Content -Path "$env:TEMP\acred.json" -Value '{"importe": 250.75, "punto_venta_id": 1}' -Encoding Ascii
+> curl.exe -s -X POST http://localhost:8080/api/acreditaciones -u admin:admin123 -H "Content-Type: application/json" -d "@$env:TEMP\acred.json"
+> ```
 
 ---
 
