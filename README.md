@@ -52,18 +52,38 @@ flowchart TD
 Este módulo expone una API REST que administra un **caché en memoria** de puntos de venta.
 
 ### Características
-- Almacenamiento en memoria
+- Almacenamiento en memoria (no requiere base de datos externa)
 - Identificación por ID
 - Nombre asociado a cada punto de venta
 - Operaciones CRUD
 - Usado como dependencia por otros módulos
 
-### Ejemplo de endpoint
-```text
-GET /api/pdv/1
+### Ejemplos de uso
+
+```bash
+# Listar todos los puntos de venta
+curl -u admin:admin123 http://localhost:8080/api/pdv
+
+# Obtener uno por ID
+curl -u admin:admin123 http://localhost:8080/api/pdv/1
+
+# Crear un nuevo punto de venta
+curl -X POST http://localhost:8080/api/pdv \
+  -u admin:admin123 \
+  -H "Content-Type: application/json" \
+  -d '{"id":11,"nombre":"Tucumán"}'
+
+# Actualizar un punto de venta existente
+curl -X PUT http://localhost:8080/api/pdv/11 \
+  -u admin:admin123 \
+  -H "Content-Type: application/json" \
+  -d '{"id":11,"nombre":"Tucumán Actualizado"}'
+
+# Eliminar un punto de venta
+curl -X DELETE http://localhost:8080/api/pdv/11 -u admin:admin123
 ```
 
-### Ejemplo de respuesta
+### Respuesta de ejemplo
 ```json
 {
     "id": 1,
@@ -79,11 +99,6 @@ GET /api/pdv/1
 
 - Java 21 para ejecución local.
 - Maven 3.9+ o el wrapper del proyecto.
-- PostgreSQL externo para el módulo de acreditaciones.
-- Podman/Podman Compose o Docker/Docker Compose para levantar la aplicación en contenedores.
-
-> En esta solución se documenta Podman como alternativa compatible OCI a Docker, útil cuando Docker Desktop no está disponible en el host.
-> Para usar `podman compose`, el host debe tener disponible un proveedor de Compose, por ejemplo `podman-compose` o Docker Compose compatible.
 
 ### Ejecutar tests
 
@@ -109,60 +124,11 @@ El artefacto queda en:
 target/challenge-2025-0.0.1-SNAPSHOT.jar
 ```
 
-### Configuración local
-
-La aplicación usa variables de entorno con defaults para demo:
-
-```text
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/accenture_challenge_2025_db
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres
-SPRING_JPA_HIBERNATE_DDL_AUTO=update
-```
-
-> Los defaults asumen la misma configuración que el `docker-compose.yml`. Si tu PostgreSQL nativo usa otra contraseña, créala con:
-> ```powershell
-> $env:SPRING_DATASOURCE_PASSWORD="tu_password"
-> ```
-> o pásala inline al ejecutar:
-> ```powershell
-> $env:SPRING_DATASOURCE_PASSWORD="admin23112017"; .\mvnw.cmd spring-boot:run
-> ```
-
-Para ejecutar localmente con una base PostgreSQL ya levantada:
+### Ejecución local
 
 ```bash
 .\mvnw.cmd spring-boot:run
 ```
-
-### Ejecución con Podman
-
-Desde la raíz del repositorio:
-
-```bash
-podman compose -f docker/docker-compose.yml up --build
-```
-
-Si el host usa `podman-compose`:
-
-```bash
-podman-compose -f docker/docker-compose.yml up --build
-```
-
-> ⚠️ Si el contenedor de PostgreSQL ya se ejecutó antes y persiste un volumen con datos, puede haber conflictos de contraseña. Para empezar desde cero:
-> ```bash
-> podman compose -f docker/docker-compose.yml down -v
-> podman compose -f docker/docker-compose.yml up --build
-> ```
-> La opción `-v` elimina el volumen `postgres_data`, forzando una inicialización limpia.
-
-### Ejecución con Docker
-
-```bash
-docker compose -f docker/docker-compose.yml up --build
-```
-
-> ⚠️ Misma recomendación: usar `down -v` si hay volúmenes persistentes previos.
 
 La API queda publicada en:
 
@@ -170,87 +136,7 @@ La API queda publicada en:
 http://localhost:8080
 ```
 
-PostgreSQL queda publicado en:
-
-```text
-localhost:5432
-```
-
-Variables soportadas por el compose:
-
-```text
-POSTGRES_DB=accenture_challenge_2025_db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-SPRING_JPA_HIBERNATE_DDL_AUTO=update
-```
-
-### Probar rápidamente
-
-La API tiene autenticación HTTP Basic configurada (usuario: `admin`, contraseña: `admin123`). Todos los ejemplos la incluyen para compatibilidad.
-
-#### Puntos de venta (`/api/pdv`)
-
-```bash
-# Listar todos
-curl -u admin:admin123 http://localhost:8080/api/pdv
-
-# Obtener uno
-curl -u admin:admin123 http://localhost:8080/api/pdv/1
-
-# Crear
-curl -X POST http://localhost:8080/api/pdv \
-  -u admin:admin123 \
-  -H "Content-Type: application/json" \
-  -d '{"id":11,"nombre":"Tucumán"}'
-
-# Actualizar
-curl -X PUT http://localhost:8080/api/pdv/11 \
-  -u admin:admin123 \
-  -H "Content-Type: application/json" \
-  -d '{"id":11,"nombre":"Tucumán Actualizado"}'
-
-# Eliminar
-curl -X DELETE http://localhost:8080/api/pdv/11 -u admin:admin123
-```
-
-#### Costos (`/api/costos`)
-
-```bash
-# Agregar/actualizar costo directo
-curl -X POST http://localhost:8080/api/costos \
-  -u admin:admin123 \
-  -H "Content-Type: application/json" \
-  -d '{"origen":1,"destino":4,"costo":15}'
-
-# Ver vecinos de un punto
-curl -u admin:admin123 http://localhost:8080/api/costos/1
-
-# Camino mínimo entre dos puntos
-curl -u admin:admin123 http://localhost:8080/api/costos/camino/1/4
-
-# Eliminar costo directo
-curl -X DELETE http://localhost:8080/api/costos/1/4 -u admin:admin123
-```
-
-#### Acreditaciones (`/api/acreditaciones`) — con PostgreSQL
-
-```bash
-# Crear una acreditación (el campo JSON es "punto_venta_id")
-curl -X POST http://localhost:8080/api/acreditaciones \
-  -u admin:admin123 \
-  -H "Content-Type: application/json" \
-  -d '{"importe":250.75,"punto_venta_id":1}'
-
-# Listar todas las acreditaciones
-curl -u admin:admin123 http://localhost:8080/api/acreditaciones
-```
-
-> **⚠️ Para Windows/PowerShell:** Si usas `curl.exe` desde PowerShell, el quoting del JSON puede fallar. La forma más fiable es escribir el JSON a un archivo temporal:
-> ```powershell
-> Set-Content -Path "$env:TEMP\acred.json" -Value '{"importe": 250.75, "punto_venta_id": 1}' -Encoding Ascii
-> curl.exe -s -X POST http://localhost:8080/api/acreditaciones -u admin:admin123 -H "Content-Type: application/json" -d "@$env:TEMP\acred.json"
-> ```
+> **Nota:** Los módulos 1 y 2 funcionan con caches en memoria y no requieren base de datos. El módulo 3 (acreditaciones) necesita PostgreSQL — ver configuración en su sección.
 
 ---
 
@@ -319,12 +205,26 @@ Explore --> Update
 Update --> PQ
 ```
 
-### Ejemplo de endpoint
-```text
-GET /api/costos/camino/1/4
+### Ejemplos de uso
+
+```bash
+# Agregar o actualizar un costo directo entre dos puntos
+curl -X POST http://localhost:8080/api/costos \
+  -u admin:admin123 \
+  -H "Content-Type: application/json" \
+  -d '{"origen":1,"destino":4,"costo":15}'
+
+# Ver vecinos y costos directos de un punto
+curl -u admin:admin123 http://localhost:8080/api/costos/1
+
+# Calcular camino de costo mínimo entre dos puntos
+curl -u admin:admin123 http://localhost:8080/api/costos/camino/1/4
+
+# Eliminar un costo directo
+curl -X DELETE http://localhost:8080/api/costos/1/4 -u admin:admin123
 ```
 
-### Ejemplo de respuesta
+### Respuesta de ejemplo (camino mínimo)
 ```json
 {
   "costo_total": 11,
@@ -369,10 +269,85 @@ sequenceDiagram
     Controller-->>Cliente: HTTP 201 Created
 ```
 
-### Ejemplo de endpoint
+### Requisitos de base de datos
+
+Este módulo es el único que persiste datos en **PostgreSQL**. La tabla `acreditaciones` se crea automáticamente con `ddl-auto: update`.
+
+#### Ejecución con PostgreSQL nativo
+
+Si tienes PostgreSQL instalado localmente, la aplicación se conecta usando variables de entorno con estos defaults:
+
 ```text
-POST /api/acreditaciones
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/accenture_challenge_2025_db
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=postgres
 ```
+
+> Para usar otra contraseña, defínela antes de ejecutar la app:
+> ```powershell
+> $env:SPRING_DATASOURCE_PASSWORD="tu_password"; .\mvnw.cmd spring-boot:run
+> ```
+
+> En esta solución se documenta Podman como alternativa compatible OCI a Docker, útil cuando Docker Desktop no está disponible en el host.
+> Para usar `podman compose`, el host debe tener disponible un proveedor de Compose, por ejemplo `podman-compose` o Docker Compose compatible.
+
+#### Ejecución con Podman Compose
+
+Desde la raíz del repositorio, levanta PostgreSQL + la aplicación en contenedores:
+
+```bash
+podman compose -f docker/docker-compose.yml up --build
+```
+
+Si el host usa `podman-compose`:
+
+```bash
+podman-compose -f docker/docker-compose.yml up --build
+```
+
+> ⚠️ Si el contenedor de PostgreSQL ya se ejecutó antes y persiste un volumen con datos, puede haber conflictos de contraseña. Para empezar desde cero:
+> ```bash
+> podman compose -f docker/docker-compose.yml down -v
+> podman compose -f docker/docker-compose.yml up --build
+> ```
+
+#### Ejecución con Docker Compose
+
+```bash
+docker compose -f docker/docker-compose.yml up --build
+```
+
+> ⚠️ Misma recomendación: usar `down -v` si hay volúmenes persistentes previos.
+
+Variables soportadas por el compose:
+
+```text
+POSTGRES_DB=accenture_challenge_2025_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+```
+
+### Ejemplos de uso
+
+```bash
+# Crear una acreditación (el campo JSON es "punto_venta_id")
+curl -X POST http://localhost:8080/api/acreditaciones \
+  -u admin:admin123 \
+  -H "Content-Type: application/json" \
+  -d '{"importe":250.75,"punto_venta_id":1}'
+
+# Listar todas las acreditaciones
+curl -u admin:admin123 http://localhost:8080/api/acreditaciones
+```
+
+> **⚠️ Para Windows/PowerShell:** Si usas `curl.exe` desde PowerShell, el quoting del JSON puede fallar. La forma más fiable es escribir el JSON a un archivo temporal:
+> ```powershell
+> Set-Content -Path "$env:TEMP\acred.json" -Value '{"importe": 250.75, "punto_venta_id": 1}' -Encoding Ascii
+> curl.exe -s -X POST http://localhost:8080/api/acreditaciones -u admin:admin123 -H "Content-Type: application/json" -d "@$env:TEMP\acred.json"
+> ```
+
+### Cuerpo de la solicitud
 ```json
 {
   "importe": 1500.75,
@@ -380,7 +355,7 @@ POST /api/acreditaciones
 }
 ```
 
-### Ejemplo de respuesta
+### Respuesta de ejemplo
 ```json
 {
   "id": 1,
