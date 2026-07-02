@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,6 +74,29 @@ class AcreditacionServiceTests {
             () -> acreditacionService.crearAcreditacion(request));
 
         assertEquals(Constants.PUNTO_DE_VENTA_NOT_FOUND_EXCEPTION, exception.getMessage());
+    }
+
+    @Test
+    void testObtenerAcreditaciones() {
+        var acreditacion = Acreditacion
+                .builder()
+                .id(1L)
+                .importe(importe)
+                .puntoVentaId(3)
+                .nombrePuntoVenta("GBA_2")
+                .fechaRecepcion(LocalDateTime.now())
+                .build();
+
+        when(repo.findAll()).thenReturn(List.of(acreditacion));
+
+        var response = acreditacionService.obtenerAcreditaciones();
+
+        assertEquals(1, response.size());
+        assertEquals(acreditacion.getId(), response.getFirst().id());
+        assertEquals(acreditacion.getImporte(), response.getFirst().importe());
+        assertEquals(acreditacion.getPuntoVentaId(), response.getFirst().puntoVentaId());
+        assertEquals(acreditacion.getNombrePuntoVenta(), response.getFirst().nombrePuntoVenta());
+        assertEquals(acreditacion.getFechaRecepcion(), response.getFirst().fechaRecepcion());
     }
 }
 

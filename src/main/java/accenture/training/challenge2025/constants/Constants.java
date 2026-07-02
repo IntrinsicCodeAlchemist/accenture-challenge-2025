@@ -25,4 +25,6 @@ public class Constants {
     public static final String PUNTO_DE_VENTA_INVALID_EXCEPTION = "El punto de venta debe tener id y nombre";
     public static final String PUNTO_DE_VENTA_DUPLICATED_EXCEPTION = "El punto de venta ya existe";
     public static final String PUNTO_DE_VENTA_ID_MISMATCH_EXCEPTION = "El id del path no coincide con el id del body";
+    public static final String COSTO_INVALID_EXCEPTION = "El costo directo debe ser mayor a cero";
+    public static final String COSTO_SELF_LOOP_EXCEPTION = "El costo a sí mismo es 0 y no se carga como camino directo";
 }

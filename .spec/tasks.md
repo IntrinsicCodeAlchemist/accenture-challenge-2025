@@ -2,7 +2,7 @@
 
 ## Estado general estimado
 
-**Avance estimado actual: 67% del challenge.**
+**Avance estimado actual: 78% del challenge.**
 
 La base funcional está creada, pero todavía faltan robustez de concurrencia, validaciones, tests/cobertura, correcciones Docker/config, documentación ejecutable y reporte de calidad. Además, la suite de tests actual no pasa.
 
@@ -37,43 +37,55 @@ La base funcional está creada, pero todavía faltan robustez de concurrencia, v
 
 ### T3 - Robustecer costos y grafo
 
-- [ ] Validar existencia de origen/destino contra el cache de puntos de venta antes de agregar, borrar, consultar vecinos o calcular camino.
-- [ ] Definir y documentar comportamiento de costo 0 y `origen == destino`.
-- [ ] Definir y documentar respuesta para camino inalcanzable.
-- [ ] Asegurar que al borrar o actualizar PDV no queden aristas huérfanas, o documentar la decisión.
-- [ ] Agregar tests unitarios para simetría, costo negativo, puntos inexistentes, vecinos y remoción.
+- [x] Validar existencia de origen/destino contra el cache de puntos de venta antes de agregar, borrar, consultar vecinos o calcular camino.
+- [x] Definir y documentar comportamiento de costo 0 y `origen == destino`.
+- [x] Definir y documentar respuesta para camino inalcanzable.
+- [x] Asegurar que al borrar o actualizar PDV no queden aristas huérfanas, o documentar la decisión.
+- [x] Agregar tests unitarios para simetría, costo negativo, puntos inexistentes, vecinos y remoción.
+
+Notas de contrato implementado:
+- Un costo directo editable debe ser mayor a cero.
+- `origen == destino` en camino mínimo devuelve costo `0` y recorrido con el nombre del punto.
+- Puntos inexistentes y camino inalcanzable devuelven error `404` controlado.
+- Al borrar un punto de venta se remueven sus aristas salientes y entrantes del grafo de costos.
 
 **Criterio de aceptación:** reglas del enunciado están cubiertas por tests.
 
 ### T4 - Cubrir Dijkstra con casos del challenge
 
-- [ ] Test camino directo mínimo: por ejemplo 1 -> 4 debe devolver costo 11 y recorrido CABA -> Santa Fe.
-- [ ] Test camino indirecto más barato cuando aplique.
-- [ ] Test componente desconectado o destino inalcanzable.
-- [ ] Test origen igual a destino con costo 0.
-- [ ] Test que el recorrido use nombres actuales del cache.
+- [x] Test camino directo mínimo: por ejemplo 1 -> 4 debe devolver costo 11 y recorrido CABA -> Santa Fe.
+- [x] Test camino indirecto más barato cuando aplique.
+- [x] Test componente desconectado o destino inalcanzable.
+- [x] Test origen igual a destino con costo 0.
+- [x] Test que el recorrido use nombres actuales del cache.
 
 **Criterio de aceptación:** algoritmo probado en casos normales y borde.
 
 ### T5 - Completar acreditaciones
 
-- [ ] Agregar `@Valid` al request body del controller.
-- [ ] Confirmar que `@Min` sobre `BigDecimal` cumple la regla esperada o cambiar a `@DecimalMin`.
-- [ ] Definir si POST devuelve 200 o 201.
-- [ ] Agregar test de validación HTTP para importe inválido y punto de venta inexistente.
-- [ ] Agregar test de `obtenerAcreditaciones()` en service.
+- [x] Agregar `@Valid` al request body del controller.
+- [x] Confirmar que `@Min` sobre `BigDecimal` cumple la regla esperada o cambiar a `@DecimalMin`.
+- [x] Definir si POST devuelve 200 o 201.
+- [x] Agregar test de validación HTTP para importe inválido y punto de venta inexistente.
+- [x] Agregar test de `obtenerAcreditaciones()` en service.
+
+Notas de contrato implementado:
+- `POST /api/acreditaciones` devuelve `201 Created` cuando persiste correctamente.
+- `importe` debe ser mayor a cero mediante `@DecimalMin`.
+- Errores de Bean Validation devuelven `400 Bad Request` con `ErrorResponse`.
 
 **Criterio de aceptación:** acreditaciones validan entrada, enriquecen y persisten con errores controlados.
 
-### T6 - Arreglar Docker y configuración de base externa
+### T6 - Arreglar contenedores y configuración de base externa
 
 - [ ] Corregir `POSTGRESS_PASSWORD` a `POSTGRES_PASSWORD` en `docker/docker-compose.yml`.
 - [ ] Unificar nombre de base entre `application.properties` y Docker o documentar perfiles.
 - [ ] Evitar password real/hardcodeado: usar variables de entorno con defaults seguros para demo.
-- [ ] Revisar `Dockerfile`: el contexto `build: ..` y `COPY ../target/...` pueden fallar; ajustar para build reproducible.
-- [ ] Documentar comandos: `./mvnw.cmd clean package`, `docker compose -f docker/docker-compose.yml up --build`.
+- [ ] Revisar `Dockerfile`: el contexto `build: ..` y `COPY ../target/...` pueden fallar; ajustar para build reproducible compatible con Docker y Podman.
+- [ ] Documentar comandos: `./mvnw.cmd clean package`, `podman compose -f docker/docker-compose.yml up --build` o `docker compose -f docker/docker-compose.yml up --build`.
+- [ ] Indicar en README que Podman es una alternativa válida para la defensa cuando Docker Desktop no esté disponible en el host.
 
-**Criterio de aceptación:** la aplicación levanta con PostgreSQL externo por Docker siguiendo README.
+**Criterio de aceptación:** la aplicación levanta con PostgreSQL externo usando Podman o Docker siguiendo README.
 
 ### T7 - Cobertura y calidad
 

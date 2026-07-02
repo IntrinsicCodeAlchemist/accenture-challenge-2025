@@ -1,6 +1,7 @@
 package accenture.training.challenge2025.cache;
 
 import accenture.training.challenge2025.exception.BadRequestException;
+import accenture.training.challenge2025.constants.Constants;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
@@ -18,8 +19,8 @@ public class CostosCache {
     public void init() { initDefaultData(); }
 
     public void addCosto(int a, int b, int costo) {
-        if (costo <= 0) throw new BadRequestException("Costo invalido");
-        if (a == b) throw new BadRequestException("El costo a sí mismo es 0");
+        if (costo <= 0) throw new BadRequestException(Constants.COSTO_INVALID_EXCEPTION);
+        if (a == b) throw new BadRequestException(Constants.COSTO_SELF_LOOP_EXCEPTION);
 
         graph.computeIfAbsent(a, x -> new ConcurrentHashMap<>()).put(b, costo);
         graph.computeIfAbsent(b, x -> new ConcurrentHashMap<>()).put(a, costo);
@@ -28,6 +29,11 @@ public class CostosCache {
     public void removeCosto(int a, int b) {
         Optional.ofNullable(graph.get(a)).ifPresent(map -> map.remove(b));
         Optional.ofNullable(graph.get(b)).ifPresent(map -> map.remove(a));
+    }
+
+    public void removePuntoDeVenta(int id) {
+        graph.remove(id);
+        graph.values().forEach(vecinos -> vecinos.remove(id));
     }
 
     public Map<Integer, Integer> getVecinos(int a) { return graph.getOrDefault(a, Map.of()); }

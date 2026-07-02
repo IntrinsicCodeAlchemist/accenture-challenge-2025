@@ -1,6 +1,7 @@
 package accenture.training.challenge2025.controller;
 
 import accenture.training.challenge2025.constants.Constants;
+import accenture.training.challenge2025.exception.NotFoundException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
@@ -20,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -37,7 +41,15 @@ class AcreditacionesControllerTests {
     private AcreditacionController controller;
 
     @BeforeEach
-    void setUp() { mockMvc = standaloneSetup(controller).build(); }
+    void setUp() {
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        validator.afterPropertiesSet();
+
+        mockMvc = standaloneSetup(controller)
+                .setControllerAdvice(new ExceptionHandlerController())
+                .setValidator(validator)
+                .build();
+    }
 
     BigDecimal importe = new BigDecimal("1500.75");
 
@@ -61,11 +73,44 @@ class AcreditacionesControllerTests {
         mockMvc.perform(post(Constants.ACREDITACIONES_ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(request)))
-            .andExpect(status().isOk())
+            .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").value(response.id()))
             .andExpect(jsonPath("$.importe").value(importe))
             .andExpect(jsonPath("$.punto_venta_id").value(response.puntoVentaId()))
             .andExpect(jsonPath("$.nombre_punto_venta").value(response.nombrePuntoVenta()));
+    }
+
+    @Test
+    void testCrearAcreditacionConImporteInvalido() throws Exception {
+        var request = new AcreditacionesRequest(
+            BigDecimal.ZERO,
+            3
+        );
+
+        mockMvc.perform(post(Constants.ACREDITACIONES_ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("La solicitud contiene datos invalidos"));
+
+        verify(service, never()).crearAcreditacion(any(AcreditacionesRequest.class));
+    }
+
+    @Test
+    void testCrearAcreditacionConPuntoDeVentaInexistente() throws Exception {
+        var request = new AcreditacionesRequest(
+            importe,
+            999
+        );
+
+        when(service.crearAcreditacion(any(AcreditacionesRequest.class)))
+                .thenThrow(new NotFoundException(Constants.PUNTO_DE_VENTA_NOT_FOUND_EXCEPTION));
+
+        mockMvc.perform(post(Constants.ACREDITACIONES_ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(request)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value(Constants.PUNTO_DE_VENTA_NOT_FOUND_EXCEPTION));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package accenture.training.challenge2025.service;
 
+import accenture.training.challenge2025.cache.CostosCache;
 import accenture.training.challenge2025.constants.Constants;
 import accenture.training.challenge2025.dto.punto_de_venta.PuntoDeVenta;
 import accenture.training.challenge2025.exception.BadRequestException;
@@ -21,6 +22,9 @@ import static org.mockito.Mockito.*;
 class PuntoDeVentaServiceTests {
     @Mock
     private PuntoDeVentaRepository repository;
+
+    @Mock
+    private CostosCache costosCache;
 
     @InjectMocks
     private PuntoDeVentaService service;
@@ -103,6 +107,7 @@ class PuntoDeVentaServiceTests {
         service.borrar(pdv.id());
 
         verify(repository).delete(pdv.id());
+        verify(costosCache).removePuntoDeVenta(pdv.id());
     }
 
     @Test
@@ -113,5 +118,6 @@ class PuntoDeVentaServiceTests {
 
         assertEquals(Constants.PUNTO_DE_VENTA_NOT_FOUND_EXCEPTION, exception.getMessage());
         verify(repository, never()).delete(any());
+        verify(costosCache, never()).removePuntoDeVenta(anyInt());
     }
 }

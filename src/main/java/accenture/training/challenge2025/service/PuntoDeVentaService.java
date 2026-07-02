@@ -1,5 +1,6 @@
 package accenture.training.challenge2025.service;
 
+import accenture.training.challenge2025.cache.CostosCache;
 import accenture.training.challenge2025.constants.Constants;
 import accenture.training.challenge2025.dto.punto_de_venta.PuntoDeVenta;
 import accenture.training.challenge2025.exception.BadRequestException;
@@ -14,6 +15,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class PuntoDeVentaService {
     private final PuntoDeVentaRepository repository;
+    private final CostosCache costosCache;
 
     public Collection<PuntoDeVenta> obtenerTodos() { return repository.getAll(); }
 
@@ -50,6 +52,7 @@ public class PuntoDeVentaService {
         validarIdPath(id);
         obtenerPorId(id);
         repository.delete(id);
+        costosCache.removePuntoDeVenta(id);
     }
 
     private void validarIdPath(Integer id) {

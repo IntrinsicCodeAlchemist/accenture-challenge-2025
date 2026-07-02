@@ -6,6 +6,7 @@ import accenture.training.challenge2025.exception.BadRequestException;
 import accenture.training.challenge2025.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -25,6 +26,13 @@ public class ExceptionHandlerController {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(createErrorResponse(HttpStatus.NOT_FOUND, e.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+        return ResponseEntity
+                .badRequest()
+                .body(createErrorResponse(HttpStatus.BAD_REQUEST, "La solicitud contiene datos invalidos"));
     }
 
     @ExceptionHandler(Exception.class)
