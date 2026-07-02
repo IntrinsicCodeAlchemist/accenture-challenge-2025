@@ -6,13 +6,14 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class PuntoDeVentaCache implements PuntoDeVentaRepository {
-    private final Map<Integer, PuntoDeVenta> cache = new HashMap<>();
+    private final Map<Integer, PuntoDeVenta> cache = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
@@ -28,7 +29,7 @@ public class PuntoDeVentaCache implements PuntoDeVentaRepository {
         cache.put(10, new PuntoDeVenta(10, "Catamarca"));
     }
 
-    public Collection<PuntoDeVenta> getAll() { return cache.values(); }
+    public Collection<PuntoDeVenta> getAll() { return List.copyOf(cache.values()); }
 
     public Optional<PuntoDeVenta> findById(Integer id) { return Optional.ofNullable(cache.get(id)); }
 

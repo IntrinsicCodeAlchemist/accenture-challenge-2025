@@ -1,7 +1,6 @@
 package accenture.training.challenge2025.controller;
 
 import accenture.training.challenge2025.constants.Constants;
-import org.json.JSONString;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
@@ -66,7 +64,8 @@ class AcreditacionesControllerTests {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(response.id()))
             .andExpect(jsonPath("$.importe").value(importe))
-            .andExpect(jsonPath("$.nombrePuntoVenta").value(response.nombrePuntoVenta()));
+            .andExpect(jsonPath("$.punto_venta_id").value(response.puntoVentaId()))
+            .andExpect(jsonPath("$.nombre_punto_venta").value(response.nombrePuntoVenta()));
     }
 
     @Test
@@ -85,6 +84,7 @@ class AcreditacionesControllerTests {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id").value(response.id()))
             .andExpect(jsonPath("$[0].importe").value(importe))
-            .andExpect(jsonPath("$[0].nombrePuntoVenta").value(response.nombrePuntoVenta()));
+            .andExpect(jsonPath("$[0].punto_venta_id").value(response.puntoVentaId()))
+            .andExpect(jsonPath("$[0].nombre_punto_venta").value(response.nombrePuntoVenta()));
     }
 }

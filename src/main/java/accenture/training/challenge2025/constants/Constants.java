@@ -22,4 +22,7 @@ public class Constants {
     // EXCEPTION MESSAGES
     public static final String GENERIC_EXCEPTION = "Error inesperado en la aplicacion";
     public static final String PUNTO_DE_VENTA_NOT_FOUND_EXCEPTION = "El punto de venta no existe";
+    public static final String PUNTO_DE_VENTA_INVALID_EXCEPTION = "El punto de venta debe tener id y nombre";
+    public static final String PUNTO_DE_VENTA_DUPLICATED_EXCEPTION = "El punto de venta ya existe";
+    public static final String PUNTO_DE_VENTA_ID_MISMATCH_EXCEPTION = "El id del path no coincide con el id del body";
 }
