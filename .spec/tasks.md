@@ -2,7 +2,7 @@
 
 ## Estado general estimado
 
-**Avance estimado actual: 78% del challenge.**
+**Avance estimado final: 90% del challenge.**
 
 La base funcional está creada, pero todavía faltan robustez de concurrencia, validaciones, tests/cobertura, correcciones Docker/config, documentación ejecutable y reporte de calidad. Además, la suite de tests actual no pasa.
 
@@ -78,43 +78,55 @@ Notas de contrato implementado:
 
 ### T6 - Arreglar contenedores y configuración de base externa
 
-- [ ] Corregir `POSTGRESS_PASSWORD` a `POSTGRES_PASSWORD` en `docker/docker-compose.yml`.
-- [ ] Unificar nombre de base entre `application.properties` y Docker o documentar perfiles.
-- [ ] Evitar password real/hardcodeado: usar variables de entorno con defaults seguros para demo.
-- [ ] Revisar `Dockerfile`: el contexto `build: ..` y `COPY ../target/...` pueden fallar; ajustar para build reproducible compatible con Docker y Podman.
-- [ ] Documentar comandos: `./mvnw.cmd clean package`, `podman compose -f docker/docker-compose.yml up --build` o `docker compose -f docker/docker-compose.yml up --build`.
-- [ ] Indicar en README que Podman es una alternativa válida para la defensa cuando Docker Desktop no esté disponible en el host.
+- [x] Corregir `POSTGRESS_PASSWORD` a `POSTGRES_PASSWORD` en `docker/docker-compose.yml`.
+- [x] Unificar nombre de base entre `application.properties` y Docker o documentar perfiles.
+- [x] Evitar password real/hardcodeado: usar variables de entorno con defaults seguros para demo.
+- [x] Revisar `Dockerfile`: el contexto `build: ..` y `COPY ../target/...` pueden fallar; ajustar para build reproducible compatible con Docker y Podman.
+- [x] Documentar comandos: `./mvnw.cmd clean package`, `podman compose -f docker/docker-compose.yml up --build` o `docker compose -f docker/docker-compose.yml up --build`.
+- [x] Indicar en README que Podman es una alternativa válida para la defensa cuando Docker Desktop no esté disponible en el host.
+
+Notas de verificación:
+- `podman build -f docker/Dockerfile -t challenge-2025:test .` verificado correctamente.
+- `podman compose` requiere proveedor de Compose en el host (`podman-compose` o compatible); en esta máquina no está instalado, por eso no se ejecutó `compose up` completo.
 
 **Criterio de aceptación:** la aplicación levanta con PostgreSQL externo usando Podman o Docker siguiendo README.
 
 ### T7 - Cobertura y calidad
 
-- [ ] Agregar plugin JaCoCo en Maven.
-- [ ] Generar reporte con `./mvnw.cmd clean verify`.
-- [ ] Alcanzar o superar 70% de cobertura excluyendo código trivial si se justifica.
-- [ ] Agregar task Maven o documentación para reporte de dependencias/vulnerabilidades si se decide usar OWASP Dependency Check o equivalente.
-- [ ] Revisar warnings relevantes de Mockito/JDK para evitar fragilidad futura.
+- [x] Agregar plugin JaCoCo en Maven con threshold 70%.
+- [x] Generar reporte con `./mvnw.cmd clean verify`.
+- [x] Alcanzar o superar 70% de cobertura excluyendo código trivial si se justifica.
+- [x] Revisar warnings relevantes de Mockito/JDK para evitar fragilidad futura.
+
+Notas:
+- Cobertura real: ~96% instrucciones, ~97% líneas (excluyendo DTOs, entidades, config, clase principal).
+- No se agregó OWASP Dependency Check por simplicidad; las dependencias son de Spring Boot BOM actualizado.
+- JaCoCo se integra en la fase `verify` con check automático.
 
 **Criterio de aceptación:** existe reporte de cobertura y la suite queda por encima del objetivo.
 
 ### T8 - Documentación final para entrega
 
-- [ ] Completar README con build, ejecución local, Docker, variables requeridas y comandos de prueba.
-- [ ] Agregar colección curl/Postman o sección con ejemplos para todos los casos de uso.
-- [ ] Documentar supuestos.
-- [ ] Documentar utilidades Java modernas usadas y versión donde aplican.
-- [ ] Documentar patrones de diseño aplicados.
-- [ ] Vincular diagramas Mermaid en README o mantenerlos renderizables en `docs/`.
+- [x] Completar README con build, ejecución local, Podman/Docker, variables requeridas y comandos de prueba.
+- [x] Agregar sección con ejemplos curl para todos los casos de uso.
+- [x] Documentar supuestos (12 supuestos documentados).
+- [x] Documentar utilidades Java modernas usadas y versión donde aplican (tabla con 11 utilidades).
+- [x] Documentar patrones de diseño aplicados (tabla con 9 patrones).
+- [x] Vincular diagramas Mermaid en README.
 
 **Criterio de aceptación:** un evaluador puede compilar, ejecutar y probar todos los casos desde cero.
 
 ### T9 - Revisión final pre-entrega
 
-- [ ] Ejecutar `git status` para asegurar solo cambios esperados.
-- [ ] Ejecutar `./mvnw.cmd clean verify`.
-- [ ] Probar manualmente endpoints principales contra la app levantada.
-- [ ] Revisar que no haya secretos reales en configuración/documentación.
-- [ ] Confirmar que el repositorio público no incluya artefactos innecesarios (`target/`, `.idea/`) si no corresponde.
+- [x] Ejecutar `git status` para asegurar solo cambios esperados.
+- [x] Ejecutar `./mvnw.cmd clean verify`.
+- [ ] Probar manualmente endpoints principales contra la app levantada (pendiente de que el usuario instale PostgreSQL).
+- [x] Revisar que no haya secretos reales en configuración/documentación.
+- [x] Confirmar que el repositorio público no incluya artefactos innecesarios (`target/`, `.idea/`).
+
+Notas:
+- No se ejecutó prueba end-to-end contra PostgreSQL porque el motor no está instalado en el host local.
+- El usuario indicó que se encargará de la configuración de base de datos manualmente.
 
 **Criterio de aceptación:** repositorio listo para publicación y defensa técnica.
 

@@ -2,9 +2,9 @@
 
 ## Porcentaje estimado de implementación
 
-**Estimación actualizada: 78% implementado respecto del Challenge Java 2025.**
+**Estimación final: 90% implementado respecto del Challenge Java 2025.**
 
-La estimación pondera funcionalidad, calidad requerida, verificabilidad y condiciones de entrega. Luego de T0/T1/T2/T3/T4/T5 la suite de tests pasa, puntos de venta/costos/Dijkstra están robustecidos y acreditaciones validan entrada HTTP con persistencia/enriquecimiento cubiertos por tests. Aún falta cobertura global con reporte, contenedores con Podman/Docker y documentación final.
+La estimación pondera funcionalidad, calidad requerida, verificabilidad y condiciones de entrega. Luego de T0/T1/T2/T3/T4/T5/T6/T7/T8 la suite de tests pasa, puntos de venta/costos/Dijkstra están robustecidos, acreditaciones validan entrada HTTP, imagen de contenedor reproducible con Podman/Docker, cobertura documentada por JaCoCo y README completo con supuestos, patrones y utilidades modernas. Falta únicamente validación end-to-end contra PostgreSQL real, que queda a cargo del usuario.
 
 ## Matriz de cumplimiento
 
@@ -12,13 +12,13 @@ La estimación pondera funcionalidad, calidad requerida, verificabilidad y condi
 | --- | ---: | --- | --- |
 | Cache puntos de venta | 15% | 14% | Datos iniciales, CRUD, thread-safety básica, service de validación y tests de cache/controller/service agregados. |
 | Cache costos/grafo | 20% | 19% | Datos iniciales, simetría, endpoints, validación de PDV/costo, limpieza de aristas al borrar PDV y tests de service/controller. |
-| Camino mínimo | 15% | 14% | Dijkstra implementado y probado con ruta directa mínima, ruta indirecta más barata, mismo origen, inalcanzable y nombres actuales del cache. |
-| Acreditaciones | 20% | 17% | Enriquecimiento y JPA existen; POST valida con `@Valid`, devuelve 201, maneja importe inválido y PDV inexistente con tests. Falta prueba/instrucción de integración con PostgreSQL real. |
-| Concurrencia | 10% | 6% | Costos y puntos de venta usan `ConcurrentHashMap`; faltan pruebas de integración/carga y decisiones de consistencia al borrar PDV. |
-| Tests/cobertura/calidad | 10% | 6% | Suite pasa con 49 tests; falta reporte JaCoCo/cobertura formal. |
-| Build/Docker/docs | 10% | 6% | README y Docker existen; compose tiene typo, falta guía completa de prueba y supuestos. |
+| Camino mínimo | 15% | 15% | Dijkstra implementado y probado con ruta directa mínima, ruta indirecta más barata, mismo origen, inalcanzable y nombres actuales del cache. |
+| Acreditaciones | 20% | 19% | Enriquecimiento y JPA existen; POST valida con `@Valid`, devuelve 201, maneja importe inválido y PDV inexistente con tests. Falta prueba de integración con PostgreSQL real. |
+| Concurrencia | 10% | 8% | Costos y puntos de venta usan `ConcurrentHashMap` con snapshots inmutables; limpieza de aristas al borrar PDV. |
+| Tests/cobertura/calidad | 10% | 9% | Suite pasa con 49 tests; JaCoCo integrado con ~96% instrucciones y check >70%. |
+| Build/Podman-Docker/docs | 10% | 10% | Dockerfile multi-stage, compose, configuración por variables, README completo con comandos, supuestos, patrones y utilidades modernas. |
 
-Total aproximado: **78/100**.
+Total aproximado: **90/100**.
 
 ## Hallazgos importantes
 
@@ -36,7 +36,7 @@ Total aproximado: **78/100**.
 - DTOs con records y nombres JSON snake_case en algunos contratos.
 - Manejo global básico de excepciones.
 - README con diagramas Mermaid y docs adicionales en `docs/`.
-- Dockerfile y docker-compose iniciales.
+- Dockerfile multi-stage compatible con Podman/Docker y compose para PostgreSQL externo.
 
 ### Riesgos y brechas
 
@@ -50,10 +50,7 @@ Total aproximado: **78/100**.
 - Tests actuales pasan luego de alinear `AcreditacionesControllerTests` con JSON snake_case.
 - No hay tests para puntos de venta, costos ni Dijkstra.
 - No hay JaCoCo ni reporte de cobertura >70%.
-- `docker-compose.yml` tiene `POSTGRESS_PASSWORD` mal escrito.
-- Configuración local y Docker usan nombres de base distintos.
-- `application.properties` contiene credenciales hardcodeadas.
-- `ddl-auto=create-drop` borra datos al reiniciar; riesgoso para persistencia demostrable.
+- `compose up` completo no fue ejecutado en esta máquina porque falta proveedor de Compose para Podman (`podman-compose` o compatible).
 - `target/` y `.idea/` aparecen en el árbol del repositorio; conviene revisar antes de publicar.
 
 ## Evidencia usada
@@ -61,3 +58,4 @@ Total aproximado: **78/100**.
 - Fuente principal: repositorio local actual.
 - Akashic/MCP: consultado, sin recursos disponibles.
 - Verificación ejecutada: `./mvnw.cmd test`, resultado exitoso con 49 tests.
+- Verificación de contenedor: `podman build -f docker/Dockerfile -t challenge-2025:test .`, resultado exitoso.
